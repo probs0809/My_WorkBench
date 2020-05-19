@@ -2,75 +2,18 @@ import { LightningElement, track, wire } from 'lwc';
 import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 import getObjectFields from "@salesforce/apex/WorkBenchHelper.getObjectFields"
 import getObjectNames from "@salesforce/apex/WorkBenchHelper.getObjectNames"
-
-var id = 0;
-class Condition {
-    MyCondition = "";
-    MyFilterOption = "";
-    MyConditionText = "";
-    key = id++;
-
-
-    getQuery(){
-        debugger;
-        switch (this.MyFilterOption) {
-            case '=':
-                return this.MyCondition + ' ' + this.MyFilterOption + ' '+this.MyConditionText;
-            case '!=':
-                return this.MyCondition + ' ' + this.MyFilterOption + ' '+this.MyConditionText;
-            case '>' :
-                return this.MyCondition + ' ' + this.MyFilterOption + ' '+this.MyConditionText;
-            case '>=' :
-                return this.MyCondition + ' ' + this.MyFilterOption + ' '+this.MyConditionText;
-            case '<' :
-                return this.MyCondition + ' ' + this.MyFilterOption + ' '+this.MyConditionText;
-            case '<=' :
-                return this.MyCondition + ' ' + this.MyFilterOption + ' '+this.MyConditionText;
-            case 'starts_with':
-                return this.MyCondition + ' LIKE '+this.MyConditionText+'%';
-            case 'ends_with':
-                return this.MyCondition + ' LIKE %'+this.MyConditionText;
-            case 'contains':
-                return this.MyCondition + ' LIKE %'+this.MyConditionText+'%';
-            case 'in' :
-                return this.MyCondition + ' IN ('+this.MyConditionText+')';
-            case 'not_in':
-                return this.MyCondition + ' NOT IN ('+this.MyConditionText+')';
-            case 'includes':
-                return this.MyCondition + ' INCLUDES ('+this.MyConditionText+')';
-            case 'excludes':
-                return this.MyCondition + ' EXCLUDES ('+this.MyConditionText+')';
-            default:
-                return '';
-        }
-    }
-
-    ConditionHandleChange(event) {
-        this.MyCondition = event.detail.value;
-        console.log(this.MyCondition);
-    }
-
-    FilterByHandleChange(event) {
-        this.MyFilterOption = event.detail.value;
-        console.log(this.MyFilterOption);
-    }
-
-    ConditionParameterHandlerChange(event) {
-        this.MyConditionText = event.detail.value;
-        console.log(this.MyConditionText); 
-    }
-}
-
-
+import Condition from "./Condition";
 
 export default class WorkBench extends LightningElement {
     @track con = [ new Condition() ]
+    
     // Condition
     @track Query = '';
     @track limit = 0;
     
     AddCondition(event){
         this.con.push(new Condition());
+        this.con[0].MyFilterOption = '=';
         console.log(this.con);
     }
 
@@ -242,13 +185,16 @@ export default class WorkBench extends LightningElement {
             var cq = this.con[i].getQuery();
             if(cq.length > 1){
                 if(b){
-                    where = cq; 
+                    where = ' WHERE ' + cq; 
+                    b = false;
                 }else{
                     where += ' AND ' + cq;
                 }
             }
             console.log(this.con[i]);
         }
+        b = true;
         this.Query = 'SELECT ' + this.FieldsValue + ' FROM '+ this.ObjectValue + " " + where + " " + order + " " + lim;   
+    
     }  
 }
