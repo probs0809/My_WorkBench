@@ -1,0 +1,64 @@
+<template>
+    <div class="header">
+        <div style="display: flex;">
+            <span class="leftCol common">
+                <div class="object common">
+                    <lightning-combobox name="Object" label="Object:" value={ObjectValue} placeholder="Select Progress"
+                        options={ObjectOptions} onchange={ObjectHandleChange}>
+                    </lightning-combobox>
+                </div>
+                <div class="fields slds-scrollable common" style="height: 200px;">
+                    <lightning-checkbox-group name="Fields" label="Fields:" options={FieldsOptions} value={FieldsValue}
+                        onchange={FieldsHandleChange}>
+                    </lightning-checkbox-group>
+                </div>
+            </span>
+            <span class="common">
+                <div style="display: flex;">
+                    <lightning-radio-group class="common" name="ViewAs" label="View as:" options={VaOptions}
+                        value={VaValue} onchange={VaHandleChange} type="radio">
+                    </lightning-radio-group>
+                    <lightning-radio-group name="DAR" class="common" label="Deleted and archived records:"
+                        options={DAROptions} value={DARValue} type="radio">
+                    </lightning-radio-group>
+                </div>
+                <div style="display: flex;">
+                    <lightning-combobox class="common" name="SortBy" label="Sort result by: " value={SortByValue}
+                        placeholder="Select option" options={SortByOptions} onchange={SortByHandleChange}>
+                    </lightning-combobox>
+                    <lightning-combobox class="common" name="Order" label="Order by: " value={OrderValue}
+                        placeholder="Select" options={OrderOptions} onchange={OrderHandleChange}>
+                    </lightning-combobox>
+                    <lightning-combobox class="common" name="NullPo" label="Null Position: " value={NullPoValue}
+                        placeholder="Select" options={NullPoOptions} onchange={NullPoHandleChange}>
+                    </lightning-combobox>
+                    <lightning-input class="common" type="number" value={limit} name="limit" label="Max Records" onchange={limitHandler}>
+                    </lightning-input>
+                </div>
+                <div id="queryCondition">
+                    <p>Filter result by:</p>
+                    <br />
+                    <template iterator:it={con}>
+                        <div style="display: flex;" key={it.value.key} >
+                            <lightning-combobox class="common" name="FilterBy" value={it.value.MyCondition}
+                                placeholder="Select option" options={FilterByOptions} onchange={it.value.ConditionHandleChange}>
+                            </lightning-combobox>
+                            <lightning-combobox class="common" name="Condition" value={it.value.MyFilterOption} placeholder="Select"
+                                options={ConditionOptions} onchange={it.value.FilterByHandleChange} >
+                            </lightning-combobox>
+                            <lightning-input class="common" type="text" name="conText" value={it.value.MyConditionText}
+                                onblur={it.value.ConditionParameterHandlerChange}>
+                            </lightning-input>
+                        </div>
+                    </template>
+                    <lightning-button label="Add condition" title="Non-primary action" class="slds-m-left_x-small" onclick={AddCondition}></lightning-button>
+                </div>
+            </span>
+        </div>
+        <div>
+            <lightning-textarea class="common" name="Query" value={Query} label="query" >
+            </lightning-textarea>
+        </div>
+        <lightning-button class="common" label="Query"></lightning-button>
+    </div>
+</template>

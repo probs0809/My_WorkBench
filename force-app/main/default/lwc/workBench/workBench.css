@@ -1,0 +1,19 @@
+.header{
+    background-color: antiquewhite;
+    padding: 2%;
+    border-radius: 4px;
+    font-style: normal;
+    font-family: sans-serif;
+    
+}
+.common{
+    margin: 1%;
+}
+
+.leftCol{
+    width: 30%;
+}
+
+.rightCol{
+    width: 70%;
+}
