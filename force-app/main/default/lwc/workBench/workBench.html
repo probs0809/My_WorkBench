@@ -37,7 +37,6 @@
                 </div>
                 <div id="queryCondition">
                     <p>Filter result by:</p>
-                    <br />
                     <template iterator:it={con}>
                         <div style="display: flex;" key={it.value.key} >
                             <lightning-combobox class="common" name="FilterBy" value={it.value.MyCondition}
@@ -55,10 +54,25 @@
                 </div>
             </span>
         </div>
-        <div>
-            <lightning-textarea class="common" name="Query" value={Query} label="query" >
+        <div class="common">
+            <lightning-textarea  name="Query" value={Query} label="query" onchange={queryHandler}>
             </lightning-textarea>
         </div>
-        <lightning-button class="common" label="Query"></lightning-button>
+        <div class="common">
+            <lightning-button  label="Query" onclick={queryButtonHandler}></lightning-button>
+        </div>
+        <div class="slds-m-around_medium">
+            <template if:true={record.bool}>
+                <lightning-datatable
+                key-field="id"
+                    data={record.data}
+                    columns={cols}>
+                </lightning-datatable>
+            </template>
+            <template if:false={contact.bool}>
+                <!-- handle Apex error -->
+            </template>
+        </div>
+       
     </div>
 </template>

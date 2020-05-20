@@ -1,28 +1,30 @@
 import { LightningElement, track, wire } from 'lwc';
-import { getObjectInfo } from 'lightning/uiObjectInfoApi';
 import getObjectFields from "@salesforce/apex/WorkBenchHelper.getObjectFields"
 import getObjectNames from "@salesforce/apex/WorkBenchHelper.getObjectNames"
+import getRecord from "@salesforce/apex/WorkBenchHelper.getRecord"
 import Condition from "./Condition";
 
 export default class WorkBench extends LightningElement {
-    @track con = [ new Condition() ]
+    @track con = [ new Condition(this) ]
     
     // Condition
     @track Query = '';
     @track limit = 0;
     
     AddCondition(event){
-        this.con.push(new Condition());
-        this.con[0].MyFilterOption = '=';
-        console.log(this.con);
+        this.con.push(new Condition(this));
     }
 
     limitHandler(event){
         this.limit = event.detail.value;
         this.generateQuery();
     }
+
+    queryHandler(event){
+        this.Query = event.detail.value;
+    }
     // Object
-    ObjectValue = 'inProgress';
+    @track ObjectValue = 'inProgress';
     @track ObjectInfo = {data: []};
     @wire(getObjectNames) ObjectInfo;
     get ObjectOptions() {
@@ -39,13 +41,13 @@ export default class WorkBench extends LightningElement {
     }
 
     // Fields
-    FieldsValue = '';
+    @track FieldsValue = '';
     @track FieldInfo = {data: []};
     @wire(getObjectFields,{objs: "$ObjectValue"}) FieldInfo;
     get FieldsOptions() {
         var options = []
         for (const e in this.FieldInfo.data) {
-            options.push( { label: this.FieldInfo.data[e], value: this.FieldInfo.data[e] })
+            options.push( { label: this.FieldInfo.data[e].split(',')[0], value: this.FieldInfo.data[e].split(',')[0] })
         }
         return options;
     }
@@ -93,7 +95,7 @@ export default class WorkBench extends LightningElement {
     get SortByOptions() {
         var options = []
         for (const e in this.FieldInfo.data) {
-            options.push( { label: this.FieldInfo.data[e], value: this.FieldInfo.data[e] })
+            options.push( { label: this.FieldInfo.data[e].split(',')[0], value: this.FieldInfo.data[e].split(',')[0] })
         }
         return options;
     }
@@ -103,7 +105,7 @@ export default class WorkBench extends LightningElement {
         this.generateQuery();
     }
 
-    // Order
+    // Order By
     OrderValue = 'ASC';
 
     get OrderOptions() {
@@ -118,13 +120,13 @@ export default class WorkBench extends LightningElement {
         this.generateQuery();
     }
 
-    // NullPo
-    NullPoValue = 'NULL LAST';
+    // Null Position
+    NullPoValue = 'NULLS LAST';
 
     get NullPoOptions() {
         return [
-            { label: 'Null First', value: 'NULL FIRST' },
-            { label: 'Null Last', value: 'NULL LAST' },
+            { label: 'Null First', value: 'NULLS FIRST' },
+            { label: 'Null Last', value: 'NULLS LAST' },
             
         ];
     }
@@ -162,12 +164,12 @@ export default class WorkBench extends LightningElement {
     get FilterByOptions() {
         var options = []
         for (const e in this.FieldInfo.data) {
-            options.push( { label: this.FieldInfo.data[e], value: this.FieldInfo.data[e] })
+            options.push( { label: this.FieldInfo.data[e].split(',')[0], value: this.FieldInfo.data[e] })
         }
         return options;
     }
 
-    
+    // Query generate
     generateQuery(){
         var order = '';
         var where = '';
@@ -185,16 +187,43 @@ export default class WorkBench extends LightningElement {
             var cq = this.con[i].getQuery();
             if(cq.length > 1){
                 if(b){
-                    where = ' WHERE ' + cq; 
+                    where = 'WHERE ' + cq; 
                     b = false;
                 }else{
                     where += ' AND ' + cq;
                 }
             }
-            console.log(this.con[i]);
         }
         b = true;
         this.Query = 'SELECT ' + this.FieldsValue + ' FROM '+ this.ObjectValue + " " + where + " " + order + " " + lim;   
-    
     }  
+
+    // Query button
+    @track record = {data:[],bool: false};
+    @track cols = [];
+
+    queryButtonHandler(event){
+        this.record.data  = [];
+        this.cols=[];
+        this.record.bool = false;
+        getRecord({query : this.Query})
+                .then(result => {
+                    this.record.bool = true;
+                    this.record.data = result;
+                    var t = [];
+                    for(const i in this.record.data){
+                        var x = Object.keys(this.record.data[i]);
+                        if(x.length > t.length){
+                            t = x
+                        }
+                    }
+                    this.FieldsValue = t;
+                    for(const i in t){
+                        this.cols.push({label:t[i],fieldName:t[i]});
+                    }
+                })
+                .catch((error) => {
+                    
+                })
+    }
 }
