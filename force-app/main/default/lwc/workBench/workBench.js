@@ -45,7 +45,7 @@ export default class WorkBench extends LightningElement {
     @track FieldInfo = {data: []};
     @wire(getObjectFields,{objs: "$ObjectValue"}) FieldInfo;
     get FieldsOptions() {
-        var options = []
+        var options = [{label:'count()',value:'count()'}]
         for (const e in this.FieldInfo.data) {
             options.push( { label: this.FieldInfo.data[e].split(',')[0], value: this.FieldInfo.data[e].split(',')[0] })
         }
@@ -93,7 +93,7 @@ export default class WorkBench extends LightningElement {
     SortByValue = '';
 
     get SortByOptions() {
-        var options = []
+        var options = [{label: '',value: ''}];
         for (const e in this.FieldInfo.data) {
             options.push( { label: this.FieldInfo.data[e].split(',')[0], value: this.FieldInfo.data[e].split(',')[0] })
         }
@@ -162,7 +162,7 @@ export default class WorkBench extends LightningElement {
     // FilterBy
 
     get FilterByOptions() {
-        var options = []
+        var options = [{label: '',value: ''}];
         for (const e in this.FieldInfo.data) {
             options.push( { label: this.FieldInfo.data[e].split(',')[0], value: this.FieldInfo.data[e] })
         }
@@ -206,9 +206,11 @@ export default class WorkBench extends LightningElement {
         this.record.data  = [];
         this.cols=[];
         this.record.bool = false;
+
+        var csvFile = '';
+        
         getRecord({query : this.Query})
                 .then(result => {
-                    this.record.bool = true;
                     this.record.data = result;
                     var t = [];
                     for(const i in this.record.data){
@@ -218,8 +220,37 @@ export default class WorkBench extends LightningElement {
                         }
                     }
                     this.FieldsValue = t;
+
                     for(const i in t){
-                        this.cols.push({label:t[i],fieldName:t[i]});
+                        this.cols.push({label:t[i],fieldName:t[i]});   
+                    }
+
+                    if(this.VaValue == 'list'){
+                        this.record.bool = true;
+                    }else if(this.VaValue == 'bulkCsv'){
+                        csvFile += t.join(',') + '\n';
+                        for(let i=0; i < result.length; i++){
+                            let colValue = 0;
+                            for(let key in t) {
+                                if(t.hasOwnProperty(key)) {
+                                    let rowKey = t[key];
+                                    if(colValue > 0){
+                                        csvFile += ',';
+                                    }
+                                    let value = result[i][rowKey] === undefined ? '' : result[i][rowKey];
+                                    csvFile +=  '"'+value+'"' ;
+                                    colValue++;
+                                }
+                            }
+                            csvFile += '\n';
+                        }
+                        let downloadElement = document.createElement('a');
+                        downloadElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csvFile);
+                        downloadElement.target = '_self';
+                        downloadElement.download = 'Account_Data.csv';
+                        document.body.appendChild(downloadElement);
+                        downloadElement.click(); 
+
                     }
                 })
                 .catch((error) => {
